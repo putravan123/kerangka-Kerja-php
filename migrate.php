@@ -1,30 +1,32 @@
 <?php
-$config = require 'config.php';
+$config = require __DIR__ . '/config/database.php';
 
 try {
-    // Koneksi ke MySQL
-    $pdo = new PDO("mysql:host={$config['host']};dbname={$config['database']}", $config['username'], $config['password']);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    if ($config['driver'] === 'mysql') {
+        // Koneksi ke MySQL
+        $pdo = new PDO("mysql:host={$config['host']};dbname={$config['database']}", $config['username'], $config['password']);
+        echo "✅ Berhasil terhubung ke MySQL!\n";
+    } elseif ($config['driver'] === 'sqlite') {
+        // Koneksi ke SQLite
+        $database = $config['database'];
 
-    echo "Koneksi ke database {$config['database']} berhasil.\n";
-
-    // Ambil semua file di folder migrations
-    $files = glob(__DIR__ . './config/migrations/*.php');
-    sort($files); // Urutkan berdasarkan nama (timestamp)
-
-    foreach ($files as $file) {
-        require_once $file;
-        $className = basename($file, '.php');
-
-        if (class_exists($className)) {
-            $migration = new $className($pdo);
-            $migration->up();
-            echo "Migrasi {$className} berhasil dijalankan.\n";
+        // Jika file database belum ada, buat otomatis
+        if (!file_exists($database)) {
+            touch($database);
         }
+
+        $pdo = new PDO("sqlite:$database");
+        echo "✅ Berhasil terhubung ke SQLite!\n";
+    } else {
+        throw new Exception("Driver database tidak dikenal: {$config['driver']}");
     }
 
-    echo "Semua migrasi selesai.\n";
+    // Set mode error agar bisa menangkap kesalahan
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 } catch (PDOException $e) {
-    die("Error: " . $e->getMessage() . "\n");
+    die("❌ Connection failed: " . $e->getMessage() . "\n");
+} catch (Exception $e) {
+    die("❌ Error: " . $e->getMessage() . "\n");
 }
 ?>

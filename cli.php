@@ -1,6 +1,6 @@
 <?php
 if ($argc < 3) {
-    die("Usage:\n php cli.php make:all <name>\n");
+    die("Usage:\n php cli.php <command> <name>\n");
 }
 
 $command = $argv[1];
@@ -13,13 +13,22 @@ switch ($command) {
         createController($name);
         createViews($name);
         break;
+
+    case 'make:middleware':
+        createMiddleware($name);
+        break;
+
     default:
         die("Unknown command: $command\n");
 }
 
+// ===========================
+// FUNCTION PEMBUATAN FILE
+// ===========================
+
 function createMigration($name) {
     $timestamp = date('Ymd_His');
-    $filename = "./config/migrations/{$timestamp}_create_{$name}_table.php";
+    $filename = "migrations/{$timestamp}_create_{$name}_table.php";
     $className = "Create{$name}Table";
 
     $template = <<<PHP
@@ -157,4 +166,32 @@ function createViews($name) {
         file_put_contents($filePath, "<!-- {$file} for {$name} -->\n");
         echo "View file created: $filePath\n";
     }
+}
+
+function createMiddleware($name) {
+    $filename = "config/Middleware/{$name}.php";
+
+    $template = <<<PHP
+<?php
+class {$name} {
+    public static function handle(\$request, \$next) {
+        // Tambahkan logika middleware di sini
+        
+        // Contoh: Periksa apakah pengguna sudah login
+        if (!isset(\$_SESSION['user'])) {
+            header("Location: /login");
+            exit();
+        }
+
+        return \$next(\$request);
+    }
+}
+PHP;
+
+if (!is_dir("config/Middleware")) {
+    mkdir("config/Middleware", 0777, true);
+}
+
+file_put_contents($filename, $template);
+echo "Middleware created: $filename\n";
 }
