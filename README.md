@@ -84,3 +84,24 @@ Contoh :
         require 'views/dashboard/dashboard.php';
     }
 ```
+
+
+
+### Cara Membuat Middleware di Proyek Ini
+
+Untuk menambahkan middleware baru dalam proyek ini, gunakan perintah berikut di terminal atau command line:
+
+```
+php cli.php make:middleware NamaMiddleware
+```
+
+Contoh jika ingin membuat middleware `AuthMiddleware`:
+
+```
+php cli.php make:middleware AuthMiddleware
+```
+
+Perintah ini akan secara otomatis membuat file middleware baru di dalam folder `config/Middleware/`. Middleware yang dibuat dapat digunakan untuk menangani berbagai aspek keamanan, seperti otentikasi pengguna, validasi request, atau pembatasan akses sebelum request diteruskan ke aplikasi utama.
+
+Pastikan untuk menyesuaikan logika di dalam file middleware agar sesuai dengan kebutuhan proyek.
+```
